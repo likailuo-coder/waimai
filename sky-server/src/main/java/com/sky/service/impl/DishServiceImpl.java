@@ -8,6 +8,7 @@ import com.sky.dto.DishDTO;
 import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Dish;
 import com.sky.entity.DishFlavor;
+import com.sky.exception.AccountNotFoundException;
 import com.sky.exception.DeletionNotAllowedException;
 import com.sky.mapper.DishFlavorMapper;
 import com.sky.mapper.DishMapper;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.security.auth.login.AccountException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -182,6 +184,22 @@ public class DishServiceImpl implements DishService {
         }
 
         return dishVOList;
+    }
+
+    @Override
+    public void startOrStop(Long id, Integer status) {
+        // 1. 根据id查询菜品
+        Dish dish = dishMapper.getById(id);
+        if (dish == null) {
+            throw new AccountNotFoundException("菜品不存在");
+        }
+
+        // 2. 判断当前状态，取反
+        status = dish.getStatus() == 1 ? 0 : 1;
+        dish.setStatus(status);
+
+        // 3. 更新
+        dishMapper.update(dish);
     }
 
 }
